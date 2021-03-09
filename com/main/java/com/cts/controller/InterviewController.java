@@ -2,6 +2,7 @@ package com.cts.controller;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.ModelAndView;
+
 import com.cts.dao.InterviewRepository;
 import com.cts.model.InterviewDetails;
 import com.cts.service.InterviewService;
@@ -33,21 +36,53 @@ public class InterviewController {
 
 	@Autowired
 	RestTemplate restTemplate;
+	
+	
 
+	@RequestMapping(value = "/logout")
+	public String loginPage(Model model) {
+		model.addAttribute("command", new InterviewDetails());
+		return "login";
+	}
+	
 	@RequestMapping(value = "/indexpage", method = RequestMethod.GET)
 	public String indexPage(Model model) {
 		model.addAttribute("command", new InterviewDetails());
 		return "index";
 	}
 
-	@RequestMapping(value = "/welcome", method = RequestMethod.GET)
+	@RequestMapping(value = "/")
 	public String welcomePage(Model model) {
 		model.addAttribute("command", new InterviewDetails());
 		return "welcome";
 	}
+    //login start
+	@RequestMapping(value = { "/homePage"}, method = RequestMethod.GET)
+	public ModelAndView homePage() {
+		ModelAndView model = new ModelAndView();
+		model.setViewName("loginPage");
+		return model;
+	}
+	
+	@RequestMapping(value = "/loginPage")
+	public ModelAndView loginPage(@RequestParam(value = "error",required = false) String error,
+	@RequestParam(value = "logout",	required = false) String logout) {
+		
+		ModelAndView model = new ModelAndView();
+		if (error != null) {
+			model.addObject("error", "Invalid Credentials provided.");
+		}
 
-	@RequestMapping("/search")
+		if (logout != null) {
+			model.addObject("message", "Logged out from Rajesh successfully.");
+		}
+
+		model.setViewName("loginPage");
+		return model;
+	}
+	//login end
 	//search works like ::keyword is match with question then it will give result.
+	@RequestMapping("/search")
 	public String viewHomePage(Model model, @RequestParam String keyword) {
 		if (keyword != null) {
 			keyword = keyword.substring(0, 1).toUpperCase() + keyword.substring(1).toLowerCase();
@@ -59,8 +94,20 @@ public class InterviewController {
 		return "viewAllInterviewDetails";
 
 	}
-
-	// findByname based on click from UI
+	
+	//interviewquestion value is exactly match with search keyword then it display search data
+	@RequestMapping("/welcomeSearch")
+	public String welcomeSearch(Model model, @RequestParam String keyword) {
+		if (keyword != null) {
+			keyword = keyword.substring(0, 1).toUpperCase() + keyword.substring(1).toLowerCase();
+			List<InterviewDetails> list = ols.listAll(keyword);
+			model.addAttribute("list", list);
+			model.addAttribute("keyword", keyword);
+			return "welcome";
+		}
+		return "welcome";
+	}
+	// clickname value exactly match with interviewquestion value then clicked data will appear in UI
 	@RequestMapping("/getOnClickData")
 	public String getOnClickData(Model model, @RequestParam String keyword) {
 		keyword = keyword.substring(0, 1).toUpperCase() + keyword.substring(1).toLowerCase();
@@ -69,7 +116,22 @@ public class InterviewController {
 		model.addAttribute("keyword", keyword);
 		return "viewAllInterviewDetails";
 	}
-
+	@RequestMapping("/getOnClickDataByQuestion")
+	public String getOnClickDataByQuestion(Model model, @RequestParam String keyword) {
+		keyword = keyword.substring(0,1).toUpperCase() + keyword.substring(1).toLowerCase();
+		List<InterviewDetails> list = ols.findByInterviewQuestion(keyword);
+		model.addAttribute("list", list);
+		model.addAttribute("keyword", keyword);
+		return "welcome";
+	}
+	@RequestMapping("/welcomegetOnClickData")
+	public String welcomegetOnClickData(Model model, @RequestParam String keyword) {
+		keyword = keyword.substring(0, 1).toUpperCase() + keyword.substring(1).toLowerCase();
+		List<InterviewDetails> list = ols.findByInterviewQuestion(keyword);
+		model.addAttribute("list", list);
+		model.addAttribute("keyword", keyword);
+		return "welcome";
+	}
 	@RequestMapping(value = "/saveInterviewInfo", method = RequestMethod.POST)
 	public String save(@ModelAttribute("interviewDetails") InterviewDetails interviewDetails, Model model) {
 		
@@ -79,7 +141,7 @@ public class InterviewController {
 			interviewDetails.setInterviewQuestion(interviewQuestion);
 			InterviewDetails saveOldLap = ols.saveOldLap(interviewDetails);
 			model.addAttribute("command", saveOldLap);
-			return "index";// will redirect to viewemp request mapping
+			return "index";
 		}
 		return "index";
 	}

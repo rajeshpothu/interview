@@ -208,20 +208,7 @@ form.example::after {
 					<div class="modal-body">
 						<form:form method="POST" action="interview/editsave"
 							modelAttribute="list">
-							<%-- <c:forEach var="interview" items="${interviewDetails}">
-								<tr>
-								
-								<tr>
-								<th>InterviewId:</th>
-									<td>${interview.interviewId}</td>
-								</tr>
-								<td>${interview.companyName}</td>
-									<td>${interview.failureReason}</td>
-									<td>${interview.answer}</td>
-									<td>${interview.interviewDate}</td>
-									<td>${interview.interviewQuestion}</td>
-								</tr>
-							</c:forEach> --%>
+							
 						</form:form>
 					</div>
 					<div class="modal-footer">
